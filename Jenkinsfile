@@ -1,7 +1,6 @@
 pipeline {
     agent any
     
-    // This tells Jenkins to pull the Node.js tool we just configured
     tools {
         nodejs 'node20' 
     }
@@ -9,7 +8,6 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                // Pulls the latest code from your GitHub repo
                 checkout scm 
             }
         }
@@ -18,7 +16,6 @@ pipeline {
             steps {
                 dir('frontend') {
                     echo "Installing frontend dependencies..."
-                    // Note: We use 'sh' instead of 'npm' because Jenkins is running in Linux
                     sh 'npm install'
                     
                     echo "Building the React application..."
@@ -32,6 +29,24 @@ pipeline {
                 dir('backend') {
                     echo "Installing backend dependencies..."
                     sh 'npm install'
+                }
+            }
+        }
+
+        stage('Containerize Frontend') {
+            steps {
+                dir('frontend') {
+                    echo "Packaging Frontend into Docker Container..."
+                    sh 'docker build -t finconvert-frontend:latest .'
+                }
+            }
+        }
+
+        stage('Containerize Backend') {
+            steps {
+                dir('backend') {
+                    echo "Packaging Backend into Docker Container..."
+                    sh 'docker build -t finconvert-backend:latest .'
                 }
             }
         }
