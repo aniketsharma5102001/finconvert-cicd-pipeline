@@ -37,7 +37,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     echo "Packaging Frontend into Docker Container..."
-                    sh 'docker build -t finconvert-frontend:latest .'
+                    sh 'DOCKER_BUILDKIT=0 docker build -t finconvert-frontend:latest .'
                 }
             }
         }
@@ -46,10 +46,11 @@ pipeline {
             steps {
                 dir('backend') {
                     echo "Packaging Backend into Docker Container..."
-                    sh 'docker build -t finconvert-backend:latest .'
+                    sh 'DOCKER_BUILDKIT=0 docker build -t finconvert-backend:latest .'
                 }
             }
         }
+        
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying applications to Kubernetes cluster..."
