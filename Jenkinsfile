@@ -53,9 +53,21 @@ pipeline {
         
         stage('Deploy to Kubernetes') {
             steps {
+                echo "Downloading kubectl tool..."
+                sh 'curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
+                sh 'chmod +x ./kubectl'
+
+                // Point Jenkins to the Docker Desktop Kubernetes API instead of its own localhost
+                sh '''
+                if [ -f ~/.kube/config ]; then
+                    sed -i 's/127.0.0.1/kubernetes.docker.internal/g' ~/.kube/config
+                fi
+                '''
+                
                 echo "Deploying applications to Kubernetes cluster..."
-                sh "kubectl apply -f K8s/backend.yaml"
-                sh "kubectl apply -f K8s/frontend.yaml"
+                // We use our downloaded ./kubectl and skip local TLS verification for the Docker-internal routing
+                sh './kubectl --insecure-skip-tls-verify apply -f K8s/backend.yaml'
+                sh './kubectl --insecure-skip-tls-verify apply -f K8s/frontend.yaml'
             }
         }
 
