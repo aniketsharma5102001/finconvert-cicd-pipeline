@@ -50,5 +50,13 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "Deploying applications to Kubernetes cluster..."
+                sh "kubectl apply -f K8s/backend.yaml"
+                sh "kubectl apply -f K8s/frontend.yaml"
+            }
+        }
+
     }
 }
