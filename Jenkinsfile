@@ -57,19 +57,22 @@ pipeline {
                 sh 'curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
                 sh 'chmod +x ./kubectl'
 
-                // Point Jenkins to the Docker Desktop Kubernetes API instead of its own localhost
+                // Explicitly modify the file where we copied it
                 sh '''
-                if [ -f ~/.kube/config ]; then
-                    sed -i 's/127.0.0.1/kubernetes.docker.internal/g' ~/.kube/config
+                if [ -f /var/jenkins_home/.kube/config ]; then
+                    sed -i 's/127.0.0.1/kubernetes.docker.internal/g' /var/jenkins_home/.kube/config
+                else
+                    echo "ERROR: kubeconfig file not found in /var/jenkins_home/"
+                    exit 1
                 fi
                 '''
                 
                 echo "Deploying applications to Kubernetes cluster..."
-                // We use our downloaded ./kubectl and skip local TLS verification for the Docker-internal routing
-                sh './kubectl --insecure-skip-tls-verify apply -f K8s/backend.yaml'
-                sh './kubectl --insecure-skip-tls-verify apply -f K8s/frontend.yaml'
+                // Explicitly pass the file location to kubectl
+                sh './kubectl --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify apply -f K8s/backend.yaml'
+                sh './kubectl --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify apply -f K8s/frontend.yaml'
             }
         }
-
+        
     }
 }
