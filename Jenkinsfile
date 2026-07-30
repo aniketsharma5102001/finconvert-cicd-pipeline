@@ -30,6 +30,25 @@ pipeline {
             }
         }
 
+        stage('Trivy Filesystem Scan') {
+            steps {
+                echo "Downloading Trivy..."
+                sh '''
+                if ! command -v trivy &> /dev/null; then
+                    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
+                    export PATH=$PATH:$HOME/bin
+                fi
+                '''
+                
+                echo "Scanning for High & Critical Vulnerabilities and Hardcoded Secrets..."
+                // The pipeline will FAIL and stop here if it finds a High/Critical secret or CVE
+                sh '''
+                export PATH=$PATH:$HOME/bin
+                trivy fs --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 .
+                '''
+            }
+        }
+
         stage('Frontend Build') {
             steps {
                 dir('frontend') {
