@@ -12,6 +12,25 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            environment {
+                // This dynamically injects the scanner software path we configured
+                SCANNER_HOME = tool 'sonar-scanner'
+            }
+            steps {
+                // This grabs the encrypted token and server URL we configured
+                withSonarQubeEnv('sonar-server') {
+                    sh '''
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectKey=finconvert \
+                    -Dsonar.projectName="Currency Converter" \
+                    -Dsonar.sources=. \
+                    -Dsonar.exclusions="**/node_modules/**,**/dist/**,**/.git/**"
+                    '''
+                }
+            }
+        }
+
         stage('Frontend Build') {
             steps {
                 dir('frontend') {
