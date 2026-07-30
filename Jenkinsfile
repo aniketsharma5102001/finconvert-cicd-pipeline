@@ -26,6 +26,7 @@ pipeline {
                     -Dsonar.projectName="Currency Converter" \
                     -Dsonar.sources=. \
                     -Dsonar.exclusions="**/node_modules/**,**/dist/**,**/.git/**"
+                    -Dsonar.ws.timeout=300
                     '''
                 }
             }
