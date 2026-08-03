@@ -59,28 +59,6 @@ pipeline {
             }
         }
         
-        stage('Deploy to Kubernetes') {
-            steps {
-                echo "Downloading kubectl tool..."
-                sh 'curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
-                sh 'chmod +x ./kubectl'
-
-                // Explicitly modify the file where we copied it
-                sh '''
-                if [ -f /var/jenkins_home/.kube/config ]; then
-                    sed -i 's/127.0.0.1/kubernetes.docker.internal/g' /var/jenkins_home/.kube/config
-                else
-                    echo "ERROR: kubeconfig file not found in /var/jenkins_home/"
-                    exit 1
-                fi
-                '''
-                
-                echo "Deploying applications to Kubernetes cluster..."
-                // Explicitly pass the file location to kubectl
-                sh './kubectl --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify apply -f K8s/backend.yaml'
-                sh './kubectl --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify apply -f K8s/frontend.yaml'
-            }
-        }
-        
+    
     }
 }
