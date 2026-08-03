@@ -11,41 +11,12 @@ pipeline {
                 checkout scm 
             }
         }
-/*
-        stage('SonarQube Analysis') {
-            environment {
-                SCANNER_HOME = tool 'sonar-scanner'
-            }
-            steps {
-                withSonarQubeEnv('sonar-server') {
-                    sh '''
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=finconvert \
-                    -Dsonar.projectName="Currency Converter" \
-                    -Dsonar.sources=. \
-                    -Dsonar.exclusions="**/node_modules/**,**/dist/**,**/.git/**" \
-                    -Dsonar.ws.timeout=300
-                    '''
-                }
-            }
-        }
-*/
+
         stage('Trivy Filesystem Scan') {
             steps {
-                echo "Downloading Trivy..."
-                sh '''
-                if ! command -v trivy &> /dev/null; then
-                    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $HOME/bin
-                    export PATH=$PATH:$HOME/bin
-                fi
-                '''
-                
                 echo "Scanning for High & Critical Vulnerabilities and Hardcoded Secrets..."
-                // The pipeline will FAIL and stop here if it finds a High/Critical secret or CVE
-                sh '''
-                export PATH=$PATH:$HOME/bin
-                trivy fs --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 .
-                '''
+                // Trivy is already installed on our AWS server!
+                sh 'trivy fs --scanners vuln,secret --severity HIGH,CRITICAL --exit-code 1 .'
             }
         }
 
@@ -88,28 +59,6 @@ pipeline {
             }
         }
         
-        stage('Deploy to Kubernetes') {
-            steps {
-                echo "Downloading kubectl tool..."
-                sh 'curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"'
-                sh 'chmod +x ./kubectl'
-
-                // Explicitly modify the file where we copied it
-                sh '''
-                if [ -f /var/jenkins_home/.kube/config ]; then
-                    sed -i 's/127.0.0.1/kubernetes.docker.internal/g' /var/jenkins_home/.kube/config
-                else
-                    echo "ERROR: kubeconfig file not found in /var/jenkins_home/"
-                    exit 1
-                fi
-                '''
-                
-                echo "Deploying applications to Kubernetes cluster..."
-                // Explicitly pass the file location to kubectl
-                sh './kubectl --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify apply -f K8s/backend.yaml'
-                sh './kubectl --kubeconfig=/var/jenkins_home/.kube/config --insecure-skip-tls-verify apply -f K8s/frontend.yaml'
-            }
-        }
-        
+    
     }
 }
