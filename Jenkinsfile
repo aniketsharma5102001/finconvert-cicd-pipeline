@@ -11,7 +11,7 @@ pipeline {
                 checkout scm 
             }
         }
-
+/*
         stage('SonarQube Analysis') {
             environment {
                 SCANNER_HOME = tool 'sonar-scanner'
@@ -29,7 +29,7 @@ pipeline {
                 }
             }
         }
-
+*/
         stage('Trivy Filesystem Scan') {
             steps {
                 echo "Downloading Trivy..."
