@@ -45,7 +45,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     echo "Packaging Frontend into Docker Container..."
-                    sh 'DOCKER_BUILDKIT=0 docker build -t finconvert-frontend:latest .'
+                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-frontend:latest .'
                 }
             }
         }
@@ -54,7 +54,17 @@ pipeline {
             steps {
                 dir('backend') {
                     echo "Packaging Backend into Docker Container..."
-                    sh 'DOCKER_BUILDKIT=0 docker build -t finconvert-backend:latest .'
+                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-backend:latest .'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    sh 'docker push aniketsharma05/finconvert-frontend:latest'
+                    sh 'docker push aniketsharma05/finconvert-backend:latest'
                 }
             }
         }
