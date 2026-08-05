@@ -31,6 +31,22 @@ pipeline {
                 }
             }
         }
+        stage('OWASP Dependency-Check (SCA)') {
+            steps {
+                echo "Running OWASP Dependency-Check..."
+                dependencyCheck additionalArguments: '--scan ./ --format HTML --format XML', odcInstallation: 'DP-Check'
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
+        }
+
+        stage('SonarQube Quality Gate (SAST)') {
+            steps {
+                echo "Running SonarQube Static Code Analysis..."
+                withSonarQubeEnv('SonarQube') {
+                    sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarScanner/bin/sonar-scanner'
+                }
+            }
+        }
 
         stage('Backend Setup') {
             steps {
@@ -119,5 +135,19 @@ pipeline {
                 '''
             }
         }       
+    }
+    post {
+        success {
+            echo "✅ PIPELINE SUCCESS: Sending email notification..."
+            mail to: 'aniketsharma3100example.com',
+                 subject: "SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                 body: "Great news! The pipeline ${env.JOB_NAME} completed successfully and is deployed to Kubernetes.\n\nView the build here: ${env.BUILD_URL}"
+        }
+        failure {
+            echo "❌ PIPELINE FAILED: Sending email alert..."
+            mail to: 'aniketsharma3100example.com',
+                 subject: "FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                 body: "Alert! The pipeline ${env.JOB_NAME} has failed.\n\nPlease check the logs immediately: ${env.BUILD_URL}"
+        }
     }
 }
