@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finconvert-frontend
+  labels:
+    app: finconvert-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finconvert-frontend
+  template:
+    metadata:
+      labels:
+        app: finconvert-frontend
+    spec:
+      containers:
+      - name: frontend
+        # Pulls your secure Nginx React image from Docker Hub
+        image: aniketsharma05/finconvert-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
