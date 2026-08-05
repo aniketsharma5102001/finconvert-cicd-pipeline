@@ -78,6 +78,27 @@ pipeline {
             }
         }
         
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "Deploying applications to K8s cluster..."
+                // Apply backend manifests
+                sh 'kubectl apply -f k8s/backend-deployment.yaml'
+                sh 'kubectl apply -f k8s/backend-service.yaml'
+                
+                // Apply frontend manifests
+                sh 'kubectl apply -f k8s/frontend-deployment.yaml'
+                sh 'kubectl apply -f k8s/frontend-service.yaml'
+            }
+        }
+
+        stage('Verify Rollout') {
+            steps {
+                echo "Verifying zero-downtime deployment rollout..."
+                // Blocks the pipeline until the new K8s pods are fully healthy
+                sh 'kubectl rollout status deployment/finconvert-backend --timeout=120s'
+                sh 'kubectl rollout status deployment/finconvert-frontend --timeout=120s'
+            }
+        }
     
     }
 }
