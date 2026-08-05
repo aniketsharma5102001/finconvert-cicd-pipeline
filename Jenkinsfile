@@ -100,5 +100,24 @@ pipeline {
             }
         }
     
+        stage('Smoke Test') {
+            steps {
+                echo "Running automated smoke test on the live frontend..."
+                sh '''
+                    # Fetch the internal K8s cluster IP
+                    MINIKUBE_IP=$(minikube ip)
+                    
+                    # Curl the frontend and extract just the HTTP status code
+                    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$MINIKUBE_IP:30080)
+                    
+                    if [ "$HTTP_STATUS" -eq 200 ]; then
+                        echo "Smoke test passed! Application is live and responding with 200 OK."
+                    else
+                        echo "Smoke test failed! HTTP Status: $HTTP_STATUS"
+                        exit 1
+                    fi
+                '''
+            }
+        }       
     }
 }
