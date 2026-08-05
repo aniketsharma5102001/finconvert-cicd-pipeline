@@ -1,0 +1,8 @@
+# DevSecOps Risk Acceptance
+# These vulnerabilities reside strictly within the global NPM CLI tool itself.
+# The CLI is not exposed to incoming web traffic, making exploitation highly unlikely.
+# We are ignoring these until an upstream patch is released by the NPM maintainers.
+
+CVE-2026-14257
+CVE-2026-69152
+CVE-2026-69192

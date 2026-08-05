@@ -59,6 +59,15 @@ pipeline {
             }
         }
 
+        stage('Scan Docker Image') {
+            steps {
+                echo "Scanning Docker image for vulnerabilities..."
+                // Fails the pipeline if a High or Critical CVE is found in the container image
+                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-frontend:latest'
+                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-backend:latest'
+            }
+        }
+
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
