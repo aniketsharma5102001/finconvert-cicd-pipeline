@@ -16,7 +16,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        # Pulls your secure Nginx React image from Docker Hub
         image: aniketsharma05/finconvert-frontend:latest
         imagePullPolicy: Always
         ports:
