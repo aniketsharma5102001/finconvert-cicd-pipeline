@@ -31,19 +31,26 @@ pipeline {
                 }
             }
         }
+        
         stage('OWASP Dependency-Check (SCA)') {
             steps {
-                echo "Running OWASP Dependency-Check..."
-                dependencyCheck additionalArguments: '--scan ./ --format HTML --format XML', odcInstallation: 'DP-Check'
-                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+                withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
+                    echo "Running OWASP Dependency-Check..."
+                    // We pass the securely injected NVD_API_KEY into the scanner arguments
+                    dependencyCheck additionalArguments: "--scan ./ --format HTML --format XML --nvdApiKey ${NVD_API_KEY}", odcInstallation: 'DP-Check'
+                    dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+                }
             }
         }
 
         stage('SonarQube Quality Gate (SAST)') {
+            environment {
+                SCANNER_HOME = tool 'SonarScanner'
+            }
             steps {
                 echo "Running SonarQube Static Code Analysis..."
                 withSonarQubeEnv('SonarQube') {
-                    sh '/var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarScanner/bin/sonar-scanner'
+                    sh "$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=finconvert-app -Dsonar.sources=."
                 }
             }
         }
@@ -136,16 +143,17 @@ pipeline {
             }
         }       
     }
+    
     post {
         success {
             echo "✅ PIPELINE SUCCESS: Sending email notification..."
-            mail to: 'aniketsharma3100example.com',
+            mail to: 'aniketsharma3100@gmail.com',
                  subject: "SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
                  body: "Great news! The pipeline ${env.JOB_NAME} completed successfully and is deployed to Kubernetes.\n\nView the build here: ${env.BUILD_URL}"
         }
         failure {
             echo "❌ PIPELINE FAILED: Sending email alert..."
-            mail to: 'aniketsharma3100example.com',
+            mail to: 'aniketsharma3100@gmail.com',
                  subject: "FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
                  body: "Alert! The pipeline ${env.JOB_NAME} has failed.\n\nPlease check the logs immediately: ${env.BUILD_URL}"
         }
