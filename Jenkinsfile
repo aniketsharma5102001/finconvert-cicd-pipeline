@@ -32,14 +32,16 @@ pipeline {
             }
         }
         
-        // Bypassed until an NVD API Key is acquired from NIST
-        // stage('OWASP Dependency-Check (SCA)') {
-        //     steps {
-        //         echo "Running OWASP Dependency-Check..."
-        //         dependencyCheck additionalArguments: '--scan ./ --format HTML --format XML', odcInstallation: 'DP-Check'
-        //         dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-        //     }
-        // }
+        stage('OWASP Dependency-Check (SCA)') {
+            steps {
+                withCredentials([string(credentialsId: 'nvd-api-key', variable: 'NVD_API_KEY')]) {
+                    echo "Running OWASP Dependency-Check..."
+                    // We pass the securely injected NVD_API_KEY into the scanner arguments
+                    dependencyCheck additionalArguments: "--scan ./ --format HTML --format XML --nvdApiKey ${NVD_API_KEY}", odcInstallation: 'DP-Check'
+                    dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+                }
+            }
+        }
 
         stage('SonarQube Quality Gate (SAST)') {
             environment {
