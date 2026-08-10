@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: finconvert-backend-service
 spec:
-  # ClusterIP means this service is only accessible from INSIDE the cluster (Security Best Practice)
-  type: ClusterIP
+  type: NodePort
   selector:
     app: finconvert-backend
   ports:
   - protocol: TCP
     port: 5000
     targetPort: 5000
+    nodePort: 30050
