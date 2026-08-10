@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: finconvert-frontend-service
 spec:
-  # NodePort exposes the service to the outside world
   type: NodePort
   selector:
     app: finconvert-frontend
@@ -11,5 +10,5 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 80
-    # K8s will open a port on the host machine between 30000-32767
+    
     nodePort: 30080

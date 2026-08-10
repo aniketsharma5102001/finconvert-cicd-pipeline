@@ -5,7 +5,7 @@ metadata:
   labels:
     app: finconvert-backend
 spec:
-  replicas: 2  # High Availability: run 2 copies of the backend
+  replicas: 2 
   selector:
     matchLabels:
       app: finconvert-backend
@@ -14,18 +14,19 @@ spec:
       labels:
         app: finconvert-backend
     spec:
+      automountServiceAccountToken: false 
       containers:
       - name: backend
-        # Pulls the image you just pushed to Docker Hub!
-        image: aniketsharma05/finconvert-backend:latest
+        image: aniketsharma05/finconvert-backend:v1.0.0 
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
-        # Best Practice: Always define resource requests and limits
         resources:
           requests:
             memory: "128Mi"
             cpu: "100m"
+            ephemeral-storage: "50Mi" 
           limits:
             memory: "256Mi"
             cpu: "250m"
+            ephemeral-storage: "100Mi"

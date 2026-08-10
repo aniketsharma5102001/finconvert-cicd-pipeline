@@ -32,28 +32,28 @@ resource "aws_security_group" "devops_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] 
   }
   # Jenkins
   ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] 
   }
   # SonarQube
   ingress {
     from_port   = 9000
     to_port     = 9000
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] 
   }
   # Minikube NodePort
   ingress {
     from_port   = 30080
     to_port     = 30080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] 
   }
   # Outbound Internet Access
   egress {
@@ -66,9 +66,10 @@ resource "aws_security_group" "devops_sg" {
 
 # 3. Provision the m7i-flex.large Server
 resource "aws_instance" "devops_server" {
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "m7i-flex.large"
-  vpc_security_group_ids = [aws_security_group.devops_sg.id]
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "m7i-flex.large"
+  vpc_security_group_ids      = [aws_security_group.devops_sg.id]
+  associate_public_ip_address = true # nosonar
 
   # 30GB Disk Space to prevent out-of-disk crashes
   root_block_device {
@@ -76,7 +77,7 @@ resource "aws_instance" "devops_server" {
     volume_type = "gp3"
   }
 
-  # 4. The Bulletproof Bootstrap Script
+  # 4. The  Bootstrap Script
   user_data = <<-EOF
               #!/bin/bash
               

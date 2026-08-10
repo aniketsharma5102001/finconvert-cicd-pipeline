@@ -14,16 +14,19 @@ spec:
       labels:
         app: finconvert-frontend
     spec:
+      automountServiceAccountToken: false
       containers:
       - name: frontend
-        image: aniketsharma05/finconvert-frontend:latest
+        image: aniketsharma05/finconvert-frontend:v1.0.0
         imagePullPolicy: Always
         ports:
-        - containerPort: 80
+        - containerPort: 8080 
         resources:
           requests:
             memory: "64Mi"
             cpu: "50m"
+            ephemeral-storage: "50Mi"
           limits:
             memory: "128Mi"
             cpu: "100m"
+            ephemeral-storage: "100Mi"
