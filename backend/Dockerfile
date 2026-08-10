@@ -12,7 +12,7 @@ RUN npm install --omit=dev
 
 # Copy the server code
 COPY src/ ./src/
-COPY index.js ./
+COPY server.js ./
 
 # Switch to the built-in, unprivileged 'node' user before running the app
 USER node
