@@ -68,7 +68,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     echo "Packaging Frontend into Docker Container..."
-                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-frontend:latest .'
+                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-frontend:v1.0.0 .'
                 }
             }
         }
@@ -77,7 +77,7 @@ pipeline {
             steps {
                 dir('backend') {
                     echo "Packaging Backend into Docker Container..."
-                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-backend:latest .'
+                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-backend:v1.0.0 .'
                 }
             }
         }
@@ -86,8 +86,8 @@ pipeline {
             steps {
                 echo "Scanning Docker image for vulnerabilities..."
                 // Fails the pipeline if a High or Critical CVE is found in the container image
-                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-frontend:latest'
-                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-backend:latest'
+                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-frontend:v1.0.0'
+                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-backend:v1.0.0'
             }
         }
 
@@ -95,8 +95,8 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-                    sh 'docker push aniketsharma05/finconvert-frontend:latest'
-                    sh 'docker push aniketsharma05/finconvert-backend:latest'
+                    sh 'docker push aniketsharma05/finconvert-frontend:v1.0.0'
+                    sh 'docker push aniketsharma05/finconvert-backend:v1.0.0'
                 }
             }
         }
