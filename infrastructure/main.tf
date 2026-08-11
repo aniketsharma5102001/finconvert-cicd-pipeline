@@ -48,7 +48,14 @@ resource "aws_security_group" "devops_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] 
   }
-  # Minikube NodePort
+  # Backend API NodePort
+  ingress {
+    from_port   = 30050
+    to_port     = 30050
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] 
+  }
+  # Frontend Minikube NodePort
   ingress {
     from_port   = 30080
     to_port     = 30080
@@ -139,8 +146,15 @@ resource "aws_instance" "devops_server" {
   }
 }
 
-# 5. Output the new server's Public IP
+# NEW: Allocate a Static Elastic IP and attach it to the server
+
+resource "aws_eip" "static_ip" {
+  instance = aws_instance.devops_server.id
+  domain   = "vpc"
+}
+
+# 5. Output the NEW Static Elastic IP
 output "server_public_ip" {
-  description = "The public IP address of your new server"
-  value       = aws_instance.devops_server.public_ip
+  description = "The permanent static IP address of your server"
+  value       = aws_eip.static_ip.public_ip
 }
