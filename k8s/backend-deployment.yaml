@@ -21,6 +21,16 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
         resources:
           requests:
             memory: "128Mi"

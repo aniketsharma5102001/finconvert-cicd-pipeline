@@ -5,6 +5,11 @@ pipeline {
         nodejs 'node20' 
     }
 
+    // 1. Define the dynamic tag globally
+    environment {
+        IMAGE_TAG = "v1.0.${env.BUILD_NUMBER}"
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -68,7 +73,8 @@ pipeline {
             steps {
                 dir('frontend') {
                     echo "Packaging Frontend into Docker Container..."
-                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-frontend:v1.0.0 .'
+                    // 2. Use double quotes to inject the IMAGE_TAG
+                    sh "DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-frontend:${IMAGE_TAG} ."
                 }
             }
         }
@@ -77,7 +83,7 @@ pipeline {
             steps {
                 dir('backend') {
                     echo "Packaging Backend into Docker Container..."
-                    sh 'DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-backend:v1.0.0 .'
+                    sh "DOCKER_BUILDKIT=0 docker build -t aniketsharma05/finconvert-backend:${IMAGE_TAG} ."
                 }
             }
         }
@@ -85,18 +91,18 @@ pipeline {
         stage('Scan Docker Image') {
             steps {
                 echo "Scanning Docker image for vulnerabilities..."
-                // Fails the pipeline if a High or Critical CVE is found in the container image
-                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-frontend:v1.0.0'
-                sh 'trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-backend:v1.0.0'
+                sh "trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-frontend:${IMAGE_TAG}"
+                sh "trivy image --severity HIGH,CRITICAL --exit-code 1 aniketsharma05/finconvert-backend:${IMAGE_TAG}"
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    // Password parsing can stay in single quotes to prevent early shell expansion
                     sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-                    sh 'docker push aniketsharma05/finconvert-frontend:v1.0.0'
-                    sh 'docker push aniketsharma05/finconvert-backend:v1.0.0'
+                    sh "docker push aniketsharma05/finconvert-frontend:${IMAGE_TAG}"
+                    sh "docker push aniketsharma05/finconvert-backend:${IMAGE_TAG}"
                 }
             }
         }
@@ -104,6 +110,11 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying applications to K8s cluster..."
+                
+                // 3. Dynamically replace 'v1.0.0' with our new BUILD_NUMBER tag in the YAMLs
+                sh "sed -i 's/v1.0.0/${IMAGE_TAG}/g' k8s/backend-deployment.yaml"
+                sh "sed -i 's/v1.0.0/${IMAGE_TAG}/g' k8s/frontend-deployment.yaml"
+
                 // Apply backend manifests
                 sh 'kubectl apply -f k8s/backend-deployment.yaml'
                 sh 'kubectl apply -f k8s/backend-service.yaml'
@@ -129,7 +140,7 @@ pipeline {
                 sh '''
                     # Fetch the internal K8s cluster IP
                     MINIKUBE_IP=$(minikube ip)
-                    
+
                     # Curl the frontend and extract just the HTTP status code
                     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$MINIKUBE_IP:30080)
                     
