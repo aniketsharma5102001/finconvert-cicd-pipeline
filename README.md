@@ -2,7 +2,8 @@
 
 > **An end-to-end containerized web application deployed via a fully automated CI/CD pipeline.** 
 > This project demonstrates the implementation of Infrastructure as Code (IaC), continuous security scanning, container orchestration, and automated deployments.
-<img width="783" height="635" alt="Currency converter" src="https://github.com/user-attachments/assets/ff457060-7ebe-435a-852a-b23a1d78bfa0" />
+<img width="783" height="635" alt="Currency converter" src="https://github.com/user-attachments/assets/aef7c056-8393-45e3-8725-3cb8918067f9" />
+
 
 
 ---
@@ -56,7 +57,8 @@ When a developer pushes code to the repository, Jenkins triggers a comprehensive
 11. **Verify Rollout:** Confirms the Kubernetes pods are healthy and successfully running the new application state.
 12. **Smoke Test:** Executes automated post-deployment health checks against the live application.
 13. **Post Actions:** Sends comprehensive pipeline success/failure email notifications to the development team.
-    <img width="1364" height="648" alt="jenkins" src="https://github.com/user-attachments/assets/c08291ba-aebe-4be7-9122-50e83ae41864" />
+  
+<img width="1364" height="648" alt="jenkins" src="https://github.com/user-attachments/assets/9c75ba8e-44ce-429f-aea6-29a46b00fc36" />
 
 
 ---
